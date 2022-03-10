@@ -31,11 +31,12 @@ def get_files(directory):
     for ext in extensions:
         fileExt_ = r"**\*.{}"
         fileExt = fileExt_.format(ext)
-        lalist = list(pathlib.Path(directory).glob(fileExt))
+        lalist = [str(f) for f in pathlib.Path(directory).glob(fileExt)] #RECHERCHE DANS LES DOSSIERS ET SOUS DOSSIERS PAR EXTENSION
         for file in lalist:
             all_files.append(file)
 
     print(all_files)
+
 
 dir__ = check_directory()  # RECEVOIR L'ENTREE ET LE VERIFIER
 changed = change_directory(dir__)  # CHANGEMENT DU REPERTOIRE
@@ -47,6 +48,6 @@ if changed:
     '''for path, subdirs, files in os.walk(dir__):
         for name in files:
             print(os.path.join(path, name))'''
-    #fileExt = r".txt .php .html"
-    #filesList = [f for f in os.listdir(dir__) if f.endswith(fileExt)]
-    #print(filesList)
+    # fileExt = r".txt .php .html"
+    # filesList = [f for f in os.listdir(dir__) if f.endswith(fileExt)]
+    # print(filesList)
