@@ -1,6 +1,9 @@
 import os
+from os import stat
 import pathlib
 import glob
+from stat import ST_MTIME
+from time import localtime, asctime
 
 
 # POUR INTERAGIR AVEC LE SYSTEME
@@ -24,6 +27,7 @@ def check_directory():
         return user_directory
 
 
+# RECUPERE LES FICHIERS DANS LE DOSSIER
 def get_files(directory):
     all_files = []  # TABLEAU DE TOUS LES FICHIERS DANS LE REPERTOIRE
     extensions = ['php', 'html', 'css', 'js', 'txt']  # LISTE DES EXTENSIONS
@@ -31,23 +35,22 @@ def get_files(directory):
     for ext in extensions:
         fileExt_ = r"**\*.{}"
         fileExt = fileExt_.format(ext)
-        lalist = [str(f) for f in pathlib.Path(directory).glob(fileExt)] #RECHERCHE DANS LES DOSSIERS ET SOUS DOSSIERS PAR EXTENSION
+        lalist = [str(f) for f in pathlib.Path(directory).glob(fileExt)]
+        # RECHERCHE DANS LES DOSSIERS ET SOUS DOSSIERS PAR EXTENSION
         for file in lalist:
             all_files.append(file)
 
-    print(all_files)
+    return all_files
 
 
 dir__ = check_directory()  # RECEVOIR L'ENTREE ET LE VERIFIER
 changed = change_directory(dir__)  # CHANGEMENT DU REPERTOIRE
+files = []
 if changed:
     print('Dossier changé!\n')
-    print_directory()
-    get_files(dir__)
-    # filesList = [f for f in os.listdir(dir__) if os.path.isfile(os.path.join(dir__, f))]
-    '''for path, subdirs, files in os.walk(dir__):
-        for name in files:
-            print(os.path.join(path, name))'''
-    # fileExt = r".txt .php .html"
-    # filesList = [f for f in os.listdir(dir__) if f.endswith(fileExt)]
-    # print(filesList)
+    print_directory()  # AFFICHAGE DU DOSSIER
+    files = get_files(dir__)
+
+    for f in files:
+        infos = stat(f)
+        print(infos)
