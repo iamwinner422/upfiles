@@ -21,7 +21,7 @@ def change_directory(directory):
 
 def print_directory():
     print(os.getcwd())
-    time.sleep(5)
+    time.sleep(1)
     print("En attente...")
     print("")
 
@@ -59,7 +59,8 @@ def check_base_directory():
     else:
         return False
 
-def listing():
+def listing(full_path):
+    file_name = time.strftime("%Y%m%d")+".txt"
     updated_files = []
     deleted_files = []
     created_files = []
@@ -84,7 +85,7 @@ def listing():
         updated_files.append(event.src_path)
 
     def on_moved(event):
-        print(f"Le fichier {event.src_path} a été vers {event.dest_path}\n")
+        print(f"Le fichier {event.src_path} a été déplacé ou renommé en/vers {event.dest_path}\n")
         moved_files.append(event.dest_path)
 
     my_event_handler.on_created = on_created
@@ -114,54 +115,84 @@ def listing():
             my_observer.stop()
             my_observer.join()
 
-        # RECAP DES FICHIERS CREES
-        if len(created_files) == 0:
-            print("Aucun fichier crée pour l'instant.\n")
-        elif len(created_files) == 1:
-            print("Un fichier crée.")
-            print(created_files[0] + "\n")
-        else:
-            print(f"{len(created_files)} fichiers crées.")
-            for i in range(len(created_files)):
-                print(f"{i}- {created_files[i]}")
-            print(' ')
+        changed = change_directory(full_path)  #CHANGEMENT DE DOSSIER::DOSSIER DE SAUVEGARDE
 
-        # RECAP DES FICHIERS MODIFIES
-        if len(updated_files) == 0:
-            print("Aucun fichier modifié pour l'instant.\n")
-        elif len(updated_files) == 1:
-            print("Un fichier modifié.")
-            print(updated_files[0] + "\n")
-        else:
-            print(f"{len(updated_files)} fichiers modifiés.")
-            for i in range(len(updated_files)):
-                print(f"{i}- {updated_files[i]}")
-            print(' ')
+        if changed:
+            backup = open(file_name, "a+")
+            # RECAP DES FICHIERS CREES
+            if len(created_files) == 0:
+                print("Aucun fichier crée pour l'instant.\n")
+            elif len(created_files) == 1:
+                print("Un fichier crée.")
+                print(created_files[0] + "\n")
+                backup.write("-(01) FICHIER CREE\n")
+                backup.write("\t"+created_files[0] + "\n")
+                backup.write("\n")
 
-        # RECAP DES FICHIERS SUPPRIMES
-        if len(deleted_files) == 0:
-            print("Aucun fichier supprimé pour l'instant.\n")
-        elif len(deleted_files) == 1:
-            print("Un fichier supprimé.")
-            print(deleted_files[0] + "\n")
-        else:
-            print(f"{len(deleted_files)} fichiers supprimés.")
-            for i in range(len(deleted_files)):
-                print(f"{i}- {deleted_files[i]}")
-            print(' ')
+            else:
+                print(f"{len(created_files)} fichiers crées.")
+                for i in range(len(created_files)):
+                    print(f"{i}- {created_files[i]}")
+                    backup.write("-("+repr(len(created_files))+") FICHIERS CREES\n")
+                    backup.write("\t"+created_files[i] + "\n")
+                    backup.write("\n")
+                print(' ')
 
-        # RECAP DES FICHIERS RENOMMES
-        if len(moved_files) == 0:
-            print("Aucun fichier déplacé ou renommé pour l'instant.\n")
-        elif len(moved_files) == 1:
-            print("Un fichier déplacé ou renommé.")
-            print(moved_files[0] + "\n")
-        else:
-            print(f"{len(moved_files)} déplacé ou renommé.")
-            for i in range(len(moved_files)):
-                print(f"{i}- {moved_files[i]}")
-            print(' ')
+            # RECAP DES FICHIERS MODIFIES
+            if len(updated_files) == 0:
+                print("Aucun fichier modifié pour l'instant.\n")
+            elif len(updated_files) == 1:
+                print("Un fichier modifié.")
+                print(updated_files[0] + "\n")
+                backup.write("-(01) FICHIER MODIFIE\n")
+                backup.write("\t"+updated_files[0] + "\n")
+                backup.write("\n")
+            else:
+                print(f"{len(updated_files)} fichiers modifiés.")
+                for i in range(len(updated_files)):
+                    print(f"{i}- {updated_files[i]}")
+                    backup.write("-("+repr(len(updated_files))+") FICHIERS MODIFIES\n")
+                    backup.write("\t"+updated_files[i] + "\n")
+                    backup.write("\n")
+                print(' ')
 
+            # RECAP DES FICHIERS SUPPRIMES
+            if len(deleted_files) == 0:
+                print("Aucun fichier supprimé pour l'instant.\n")
+            elif len(deleted_files) == 1:
+                print("Un fichier supprimé.")
+                print(deleted_files[0] + "\n")
+                backup.write("-(01) FICHIER SUPPRIME\n")
+                backup.write("\t"+deleted_files[0] + "\n")
+                backup.write("\n")
+            else:
+                print(f"{len(deleted_files)} fichiers supprimés.")
+                for i in range(len(deleted_files)):
+                    print(f"{i}- {deleted_files[i]}")
+                    backup.write("-("+repr(len(deleted_files))+") FICHIERS SUPPRIMES\n")
+                    backup.write("\t"+deleted_files[i] + "\n")
+                    backup.write("\n")
+                print(' ')
+
+            # RECAP DES FICHIERS RENOMMES
+            if len(moved_files) == 0:
+                print("Aucun fichier déplacé ou renommé pour l'instant.\n")
+            elif len(moved_files) == 1:
+                print("Un fichier déplacé ou renommé.")
+                print(moved_files[0] + "\n")
+                backup.write("-(01) FICHIERS DEPLACE OU RENOMME\n")
+                backup.write("\t"+moved_files[0] + "\n")
+                backup.write("\n")
+            else:
+                print(f"{len(moved_files)} déplacés ou renommés.")
+                for i in range(len(moved_files)):
+                    print(f"{i}- {moved_files[i]}")
+                    backup.write("-("+repr(len(moved_files))+") FICHIERS DEPLACES OU RENOMMES\n")
+                    backup.write("\t"+moved_files[i] + "\n")
+                    backup.write("\n")
+                print(' ')
+
+            backup.close()
 
 
 # RECUPERE LES FICHIERS DANS LE DOSSIER
@@ -187,6 +218,6 @@ if __name__ == "__main__":
 
     if not os.path.exists(full_path) and not os.path.isdir(full_path):
         full_path = make_base_directory()
-        listing()
+        listing(full_path)
     else:
-        listing()
+        listing(full_path)
