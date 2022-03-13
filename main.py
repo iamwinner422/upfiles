@@ -14,8 +14,8 @@ from time import localtime, asctime'''
 # POUR INTERAGIR AVEC LE SYSTEME
 
 # Fonction pour changer de répertoire au lancement
-def change_directory(directory):
-    os.chdir(directory)
+def change_directory(directory_):
+    os.chdir(directory_)
     return True
 
 
@@ -59,7 +59,7 @@ def check_base_directory():
     else:
         return False
 
-def listing(full_path):
+def listing(full_path_):
     file_name = time.strftime("%Y%m%d")+".txt"
     updated_files = []
     deleted_files = []
@@ -74,19 +74,24 @@ def listing(full_path):
 
     def on_created(event):
         print(f"Le fichier {event.src_path} a été crée!\n")
-        created_files.append(event.src_path)
+        if event.src_path not in created_files:
+            created_files.append(event.src_path)
 
     def on_deleted(event):
         print(f"Le fichier {event.src_path}! a été supprimé!\n")
-        deleted_files.append(event.src_path)
+        if event.src_path not in deleted_files:
+            deleted_files.append(event.src_path)
 
     def on_modified(event):
         print(f"Le fichier {event.src_path} a été modifié!\n")
-        updated_files.append(event.src_path)
+        if event.src_path not in updated_files:
+            updated_files.append(event.src_path)
 
     def on_moved(event):
         print(f"Le fichier {event.src_path} a été déplacé ou renommé en/vers {event.dest_path}\n")
-        moved_files.append(event.dest_path)
+        if event.src_path not in moved_files:
+            moved_files.append(event.dest_path)
+
 
     my_event_handler.on_created = on_created
     my_event_handler.on_deleted = on_deleted
@@ -115,7 +120,7 @@ def listing(full_path):
             my_observer.stop()
             my_observer.join()
 
-        changed = change_directory(full_path)  #CHANGEMENT DE DOSSIER::DOSSIER DE SAUVEGARDE
+        changed = change_directory(full_path_)  #CHANGEMENT DE DOSSIER::DOSSIER DE SAUVEGARDE
 
         if changed:
             backup = open(file_name, "a+")
@@ -131,9 +136,9 @@ def listing(full_path):
 
             else:
                 print(f"{len(created_files)} fichiers crées.")
+                backup.write("-(" + repr(len(created_files)) + ") FICHIERS CREES\n")
                 for i in range(len(created_files)):
                     print(f"{i}- {created_files[i]}")
-                    backup.write("-("+repr(len(created_files))+") FICHIERS CREES\n")
                     backup.write("\t"+created_files[i] + "\n")
                     backup.write("\n")
                 print(' ')
@@ -149,9 +154,9 @@ def listing(full_path):
                 backup.write("\n")
             else:
                 print(f"{len(updated_files)} fichiers modifiés.")
+                backup.write("-(" + repr(len(updated_files)) + ") FICHIERS MODIFIES\n")
                 for i in range(len(updated_files)):
                     print(f"{i}- {updated_files[i]}")
-                    backup.write("-("+repr(len(updated_files))+") FICHIERS MODIFIES\n")
                     backup.write("\t"+updated_files[i] + "\n")
                     backup.write("\n")
                 print(' ')
@@ -167,9 +172,9 @@ def listing(full_path):
                 backup.write("\n")
             else:
                 print(f"{len(deleted_files)} fichiers supprimés.")
+                backup.write("-(" + repr(len(deleted_files)) + ") FICHIERS SUPPRIMES\n")
                 for i in range(len(deleted_files)):
                     print(f"{i}- {deleted_files[i]}")
-                    backup.write("-("+repr(len(deleted_files))+") FICHIERS SUPPRIMES\n")
                     backup.write("\t"+deleted_files[i] + "\n")
                     backup.write("\n")
                 print(' ')
@@ -185,30 +190,16 @@ def listing(full_path):
                 backup.write("\n")
             else:
                 print(f"{len(moved_files)} déplacés ou renommés.")
+                backup.write("-(" + repr(len(moved_files)) + ") FICHIERS DEPLACES OU RENOMMES\n")
                 for i in range(len(moved_files)):
                     print(f"{i}- {moved_files[i]}")
-                    backup.write("-("+repr(len(moved_files))+") FICHIERS DEPLACES OU RENOMMES\n")
                     backup.write("\t"+moved_files[i] + "\n")
                     backup.write("\n")
                 print(' ')
 
             backup.close()
+            print(f"Votre travail a été sauvegardé dans {str(os.path.join(full_path_, file_name))} .\n")
 
-
-# RECUPERE LES FICHIERS DANS LE DOSSIER
-'''def get_files(directory):
-    all_files = []  # TABLEAU DE TOUS LES FICHIERS DANS LE REPERTOIRE
-    extensions = ['php', 'html', 'css', 'js', 'txt']  # LISTE DES EXTENSIONS
-
-    for ext in extensions:
-        fileExt_ = r"**\*.{}"
-        fileExt = fileExt_.format(ext)
-        lalist = [str(f) for f in pathlib.Path(directory).glob(fileExt)]
-        # RECHERCHE DANS LES DOSSIERS ET SOUS DOSSIERS PAR EXTENSION
-        for file in lalist:
-            all_files.append(file)
-
-    return all_files'''
 
 
 if __name__ == "__main__":
