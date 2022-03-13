@@ -203,6 +203,7 @@ def listing(full_path_):
 
 
 if __name__ == "__main__":
+    print(" ")
     directory = 'Upfiles'
     documents_folder = os.path.expanduser('~\Documents')
     full_path = os.path.join(documents_folder, directory)
