@@ -13,53 +13,53 @@ from time import localtime, asctime'''
 
 # POUR INTERAGIR AVEC LE SYSTEME
 
+class InputOutpter:
+
+    @staticmethod
+    def retrieve_input(message:str)->str:
+        guessed = input(message)
+        return guessed
+
+    @staticmethod
+    def show_message(message:str)->None:
+        print(message)
+        return None
+
+
+
+
 # Fonction pour changer de répertoire au lancement
-def change_directory(directory_):
-    os.chdir(directory_)
+def change_directory(directory:Path):
+    os.chdir(str(directory))
     return True
 
 
 def print_directory():
     print(os.getcwd())
-    time.sleep(1)
+    # time.sleep(1)
     print("En attente...")
     print("")
 
 
-def check_directory():
-    user_directory = input("Entrez le chemin du dossier dans lequel vous travaillez: ")
-    while not os.path.exists(user_directory) and not os.path.isdir(user_directory):
-        print("Le chemin d'accès au dossier n'existe pas ou est incorrect!\n")
-        user_directory = input("Entrez le chemin du dossier: ")
-    else:
-        return user_directory
+def check_directory(directory:str)->bool:
+    
+    dir = Path(directory).resolve()
+    if dir.exists() and dir.is_dir():
+        return True
+    return False
 
 
 def make_base_directory():
+    base_directory = Path.home() / "Documents/Upfiles"
+    base_directory.mkdir(exist_ok=True)
 
-    directory_ = 'Upfiles'
-    documents_folder_ = os.path.expanduser('~/Documents')
-    #full_path = ''
+    print("Le chemin de sauvegarde par défaut est: " + str(base_directory) + "\n")
 
-    full_path_ = os.path.join(documents_folder_, directory_)
-    try:
-        os.mkdir(full_path_)
-        print("Le chemin de sauvegarde par défaut est: " + str(full_path_) + "\n")
-    except OSError as error:
-        print(error)
+    return base_directory
 
-    return full_path_
 
-def check_base_directory():
-    directory_ = 'Upfiles'
-    documents_folder_ = os.path.expanduser('~/Documents')
-    full_path_ = os.path.join(documents_folder_, directory_)
-    if not os.path.exists(full_path_) and not os.path.isdir(full_path_):
-        return True
-    else:
-        return False
+def listing(fullpath:Path):
 
-def listing(full_path_):
     file_name = time.strftime("%Y%m%d")+".txt"
     updated_files = []
     deleted_files = []
@@ -92,27 +92,25 @@ def listing(full_path_):
         if event.src_path not in moved_files:
             moved_files.append(event.dest_path)
 
-
     my_event_handler.on_created = on_created
     my_event_handler.on_deleted = on_deleted
     my_event_handler.on_modified = on_modified
     my_event_handler.on_moved = on_moved
 
-    dir__ = check_directory()  # RECEVOIR L'ENTREE ET LE VERIFIER
+    if check_directory(fullpath):
+        dir__ = fullpath
     changed = change_directory(dir__)  # CHANGEMENT DU REPERTOIRE
 
     if changed:
 
         print('Dossier changé!\n')
-
         print_directory()  # AFFICHAGE DU DOSSIER
-        # AFFICHAGE DU DOSSIER
 
         go_recursively = True
         my_observer = Observer()
         my_observer.schedule(my_event_handler, dir__, recursive=go_recursively)
-
         my_observer.start()
+
         try:
             while True:
                 time.sleep(1)
@@ -120,7 +118,7 @@ def listing(full_path_):
             my_observer.stop()
             my_observer.join()
 
-        changed = change_directory(full_path_)  #CHANGEMENT DE DOSSIER::DOSSIER DE SAUVEGARDE
+        changed = change_directory(fullpath)  #CHANGEMENT DE DOSSIER::DOSSIER DE SAUVEGARDE
 
         if changed:
             backup = open(file_name, "a+")
@@ -198,18 +196,20 @@ def listing(full_path_):
                 print(' ')
 
             backup.close()
-            print(f"Votre travail a été sauvegardé dans {str(os.path.join(full_path_, file_name))} .\n")
+            print(f"Votre travail a été sauvegardé dans {str(os.path.join(fullpath, file_name))} .\n")
 
-
-
-if __name__ == "__main__":
-    print(" ")
+def main():
     directory = 'Upfiles'
     documents_folder = os.path.expanduser('~\Documents')
     full_path = os.path.join(documents_folder, directory)
 
-    if not os.path.exists(full_path) and not os.path.isdir(full_path):
+    if not (os.path.exists(full_path) and os.path.isdir(full_path)):
         full_path = make_base_directory()
         listing(full_path)
     else:
         listing(full_path)
+    return None
+
+if __name__ == "__main__":
+    main()
+
